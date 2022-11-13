@@ -8,9 +8,11 @@ const form = document.getElementById('form');
 const happy = document.getElementById('happy');
 const good = document.getElementById('good');
 const angry = document.getElementById('angry');
+const prob = document.getElementById("probability");
 
 function test(){
             var text = $('#chat').val();
+            
             $.ajax({
                     type : 'POST',                                 
                     url : 'http://127.0.0.1:5000/model',
@@ -19,8 +21,22 @@ function test(){
                     },
                     dataType : 'JSON',
                     success : function(result){
-                            const obj = JSON.parse(result)
-                            alert(obj)
+                            const probability = JSON.parse(result)
+                            prob.innerText = probability
+                            if(probability > 60){
+                                happy.classList.add('invisible')
+                                good.classList.add('invisible')
+                                angry.classList.remove('invisible')
+                            } else if(probability >40){
+                                happy.classList.add('invisible')
+                                good.classList.remove('invisible')
+                                angry.classList.add('invisible')
+                            }else{
+                                happy.classList.remove('invisible')
+                                good.classList.add('invisible')
+                                angry.classList.add('invisible')
+                            }
+
                     },
                     error : function(xtr,status,error){
                             alert(xtr +":"+status+":"+error);

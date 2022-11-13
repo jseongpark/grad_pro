@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, json, jsonify
 import os
 import torch
 
-default_dir = "./cnn/"
+default_dir = "D:\proj/final/test1/cnn/"
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')  # GPU 할당
 
 CFG = {
@@ -139,14 +139,14 @@ class CNNclassification(nn.Module):
         return out
 
 
-def predict(model, test_loader, device):
-    model.eval()
+def predict(cnn_model, test_loader, device):
+    cnn_model.eval()
     model_pred = []
     with torch.no_grad():
         for img in iter(test_loader):
             img = img.to(device)
 
-            pred_logit = model(img)
+            pred_logit = cnn_model(img)
             pred_logit = pred_logit.argmax(dim=1, keepdim=True).squeeze(1)
 
             model_pred.extend(pred_logit.tolist())
@@ -154,8 +154,8 @@ def predict(model, test_loader, device):
 
 print("loading CNN model...")
 checkpoint = torch.load(default_dir + 'best_model.pth', map_location=device)
-model = CNNclassification().to(device)
-model.load_state_dict(checkpoint)
+cnn_model = CNNclassification().to(device)
+cnn_model.load_state_dict(checkpoint)
 
 
 def getSize(txt, font):
@@ -175,9 +175,11 @@ from jamo import h2j,j2hcj
 
 def cnn(text):
     #text=u"ひらがなㄱㄴㄷㄹ"
+    print('1', text)
     jamo_str = j2hcj(h2j(text))
+    print('2', jamo_str)
 
-    for i in range(len(text)):
+    for i in range(len(jamo_str)):
         ch = jamo_str[i]
         font = ImageFont.truetype(default_dir +"ARIALUNI.ttf", 14)
         width, height = getSize(ch, font)
@@ -198,7 +200,10 @@ def cnn(text):
     test_img_path = get_test_data(img_dir)
     test_dataset = CustomDataset(test_img_path, None, train_mode=False, transforms=test_transform)
     test_loader = DataLoader(test_dataset, batch_size=20, shuffle=False, num_workers=0)
-    preds = predict(model, test_loader, device)
+
+    print('!!!!')
+    preds = predict(cnn_model, test_loader, device)
+    print('###')
     chs = list(map(lambda pred: num_to_word[pred], preds))
     if chs[0] == chs[1]:
         del chs[0]
@@ -221,6 +226,8 @@ def cnn(text):
 # result = join_jamos(chat) # <- 결과물
 
 from flask_cors import CORS, cross_origin
+# import tensorflow as tf
+
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -234,21 +241,20 @@ def root():
 @app.route("/model", methods=['POST']) 
 def model():
     if request.method == 'POST':
-        print(request)
-        text = request.form['chat']
-        
-        text1 = cnn(text)
+        chat = request.form['chat']
 
-
+        text1 = cnn(chat)
         text2 = ''.join(text1)
         text3 = join_jamos(text2)
-
         
-        roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5')
+        # roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5')
     
-        prediction = roberta_model.predict(text3)
-    
-    return json(prediction)
+        ### prediction = roberta_model.predict(text3)
+        
+        ## jsondata=json.dumps(prediction)
+        print(text3)
+        jsondata=json.dumps(text3)
+        return jsondata
 
 
 

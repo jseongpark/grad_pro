@@ -65,7 +65,9 @@
         <h4>욕설 포함 여부를 판별하고자 하는 문장을 입력하세요</h4>
         <form method="post" role="form" class="php-email-form" id="form">
           <div class="subscribe-form">
-            <input type="text" name="chat" id="chat" style="width:80%; border:none;"><input type="submit" value="확인">
+            <input type="text" name="chat" id="chat" style="width:80%; border:none;"><input type="submit" id="submit" value=".">
+            <input type = "text" name="chat" id="chat"/>
+            <input type = "button" value = "확인" onclick="test()"/>
           </div>
           <div class="mt-2">
             <div class="loading">Loading</div>
@@ -148,34 +150,28 @@
   <script type="text/javascript" src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
 
   <script>
-    function submit(event) {
-      good.classList.add("invisible");
-      //XMLHttpRequest 객체 생성
-      var xhr = new XMLHttpRequest();
-
-      //요청을 보낼 방식, 주소, 비동기여부 설정
-      xhr.open('POST', './model', true);
-      //요청 전송
-      xhr.send();
-      //통신후 작업
-      xhr.onload = () => {
-        //통신 성공
-        if (xhr.status == 200) {
-          console.log(xhr.response);
-          console.log("통신 성공");
-        } else {
-          //통신 실패
-          console.log("통신 실패");
-        }
-      }
-      event.preventDefault();
-    }
-
     const form = document.getElementById('form');
     const happy = document.getElementById('happy');
     const good = document.getElementById('good');
     const angry = document.getElementById('angry');
-    form.addEventListener('submit', submit);
+
+    function test(){
+                var text = $('#chat').val();
+                $.ajax({
+                        type : 'POST',                                 
+                        url : 'http://127.0.0.1:5000/model',
+                        data : {
+                               chat:text                       
+                        },
+                        dataType : 'JSON',
+                        success : function(result){
+                                alert("result = "+ result);
+                        },
+                        error : function(xtr,status,error){
+                                alert(xtr +":"+status+":"+error);
+                        }
+                });
+        }
   </script>
 
 </body>

@@ -19,7 +19,8 @@ function test(){
                     },
                     dataType : 'JSON',
                     success : function(result){
-                            alert("result = "+ result);
+                            const obj = JSON.parse(result)
+                            alert(obj)
                     },
                     error : function(xtr,status,error){
                             alert(xtr +":"+status+":"+error);

@@ -9,8 +9,8 @@
   <meta content="" name="keywords">
 
   <!-- Favicons -->
-  <link href="./assets/img/favicon.png" rel="icon">
-  <link href="./assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <link href="{{ url_for('static', filename='img/favicon.png') }}" rel="icon">
+  <link href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
   <link
@@ -18,11 +18,11 @@
     rel="stylesheet">
 
   <!-- Vendor CSS Files -->
-  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="D:\proj/final/test1/templates/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
 
   <!-- Template Main CSS File -->
-  <link href="D:\proj/final/test1/templates/assets/css/style.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 
   <!-- =======================================================
   * Template Name: ComingSoon - v4.8.1
@@ -65,9 +65,7 @@
         <h4>욕설 포함 여부를 판별하고자 하는 문장을 입력하세요</h4>
         <form method="post" role="form" class="php-email-form" id="form">
           <div class="subscribe-form">
-            <input type="text" name="chat" id="chat" style="width:80%; border:none;"><input type="submit" id="submit" value=".">
-            <input type = "text" name="chat" id="chat"/>
-            <input type = "button" value = "확인" onclick="test()"/>
+            <input type="text" name="chat" id="chat" style="width:80%; border:none;"><input type="button" id="submit" value="확인" onclick="test()" readonly >
           </div>
           <div class="mt-2">
             <div class="loading">Loading</div>
@@ -145,34 +143,9 @@
       class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="./assets/js/main.js"></script>
   <script type="text/javascript" src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-  <script>
-    const form = document.getElementById('form');
-    const happy = document.getElementById('happy');
-    const good = document.getElementById('good');
-    const angry = document.getElementById('angry');
-
-    function test(){
-                var text = $('#chat').val();
-                $.ajax({
-                        type : 'POST',                                 
-                        url : 'http://127.0.0.1:5000/model',
-                        data : {
-                               chat:text                       
-                        },
-                        dataType : 'JSON',
-                        success : function(result){
-                                alert("result = "+ result);
-                        },
-                        error : function(xtr,status,error){
-                                alert(xtr +":"+status+":"+error);
-                        }
-                });
-        }
-  </script>
+  <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
 

@@ -175,9 +175,9 @@ from jamo import h2j,j2hcj
 
 def cnn(text):
     #text=u"ひらがなㄱㄴㄷㄹ"
-    print('1', text)
+    
     jamo_str = j2hcj(h2j(text))
-    print('2', jamo_str)
+    
 
     for i in range(len(jamo_str)):
         ch = jamo_str[i]
@@ -201,9 +201,9 @@ def cnn(text):
     test_dataset = CustomDataset(test_img_path, None, train_mode=False, transforms=test_transform)
     test_loader = DataLoader(test_dataset, batch_size=20, shuffle=False, num_workers=0)
 
-    print('!!!!')
+    
     preds = predict(cnn_model, test_loader, device)
-    print('###')
+    
     chs = list(map(lambda pred: num_to_word[pred], preds))
     if chs[0] == chs[1]:
         del chs[0]
@@ -225,13 +225,13 @@ def cnn(text):
 # chat = ''.join(chs)
 # result = join_jamos(chat) # <- 결과물
 
-from flask_cors import CORS, cross_origin
-# import tensorflow as tf
-
-
+import tensorflow as tf
+from tensorflow import keras
+from transformers import TFRobertaModel
+from RoBERTa_predict import *
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 app = Flask(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
-CORS(app)
 
 
 @app.route("/")
@@ -244,16 +244,19 @@ def model():
         chat = request.form['chat']
 
         text1 = cnn(chat)
+        
         text2 = ''.join(text1)
+        
         text3 = join_jamos(text2)
         
-        # roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5')
-    
-        ### prediction = roberta_model.predict(text3)
+        roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5', custom_objects={'TFRobertaModel':TFRobertaModel})
         
-        ## jsondata=json.dumps(prediction)
-        print(text3)
-        jsondata=json.dumps(text3)
+        roberta_tokenizer = get_tokenizer()
+        
+        prediction = get_predict_by_model(roberta_model, roberta_tokenizer, text3)
+        
+        jsondata = json.dumps(prediction)
+
         return jsondata
 
 

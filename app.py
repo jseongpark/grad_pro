@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, json, jsonify
 import os
 import torch
 
-default_dir = "D:\proj/final/test1/cnn/"
+default_dir = "C:\proj/final/test1/cnn/"
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')  # GPU 할당
 
 CFG = {
@@ -171,7 +171,7 @@ colorText = "black"
 
 from hangul_utils import join_jamos
 from jamo import h2j,j2hcj
-
+import os
 
 def cnn(text):
     #text=u"ひらがなㄱㄴㄷㄹ"
@@ -188,6 +188,7 @@ def cnn(text):
         d.text((4, height/2-4), ch, fill=colorText, font=font)
 
         img_dir = default_dir + 'imgs/'
+        
         img.save(img_dir + str(i) + ".png")
 
     test_transform = transforms.Compose([
@@ -241,19 +242,31 @@ def root():
 @app.route("/model", methods=['POST']) 
 def model():
     if request.method == 'POST':
+        if os.path.exists('C:\proj/final/test1/cnn/imgs/'):
+            for file in os.scandir('C:\proj/final/test1/cnn/imgs/'):
+                
+                #os.remove('C:\proj/final/test1/cnn/imgs/0.png')
+                os.remove(file)
+            print ('img 폴더 초기화 완료')
+
+
         chat = request.form['chat']
 
         text1 = cnn(chat)
+        print('CNN 처리 이후 : ')
         print(text1)
         text2 = ''.join(text1)
-        print(text2)
+        
         text3 = join_jamos(text2)
+        print('한글 Automata 처리 이후 : ')
         print(text3)
         roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5', custom_objects={'TFRobertaModel':TFRobertaModel})
         
         roberta_tokenizer = get_tokenizer()
         
         prediction = get_predict_by_model(roberta_model, roberta_tokenizer, text3)
+        print('욕설 확률 : ')
+        print(prediction)
         prediction2 = round(prediction, 1)
         jsondata = json.dumps(prediction2)
 
@@ -263,4 +276,4 @@ def model():
 
 if __name__ == "__main__": 
     print("runnig server")
-    app.run(host = "127.0.0.1", port = 5000, debug = True)
+    app.run(host = "127.0.0.1", port = 5000, debug = False)

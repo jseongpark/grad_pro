@@ -175,8 +175,8 @@ def cnn(text):
     # text=u"ひらがなㄱㄴㄷㄹ"
 
     bool = []
-
-    for i in range(len(text)):
+    text_length = len(text)
+    for i in range(text_length):
         ch = text[i]
         if ord('가') <= ord(ch) <= ord('힣') or ord('a') <= ord(ch.lower()) <= ord('z'):
             bool.append(False)
@@ -207,6 +207,7 @@ def cnn(text):
     chs = list(map(lambda pred: num_to_word[pred], preds))
     if chs[0] == chs[1]:
         del chs[0]
+        text_length = text_length - 1
         if chs[0] == 'ㄱ':
             chs[0] = 'ㄲ'
         elif chs[0] == 'ㄷ':
@@ -220,7 +221,7 @@ def cnn(text):
 
     result = []
     j = 0
-    for i in range(len(text)):
+    for i in range(text_length):
         if bool[i]:
             result.append(chs[j])
             j = j + 1

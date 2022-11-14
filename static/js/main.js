@@ -9,7 +9,7 @@ const happy = document.getElementById('happy');
 const good = document.getElementById('good');
 const angry = document.getElementById('angry');
 const prob = document.getElementById("probability");
-const loader = $("div.loader");
+const loader = document.getElementById("loader");
 function test() {
     _loadPage();
     var text = $('#chat').val();
@@ -48,9 +48,11 @@ function test() {
 
 
 var _showPage = function () {
-    loader.css("display", "none");
+    loader.classList.add('invisible')
+    form.classList.remove('invisible')
 };
 
 var _loadPage = function () {
-    loader.css("display", "visible");
+    loader.classList.remove('invisible')
+    form.classList.add('invisible')
 };

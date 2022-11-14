@@ -33,9 +33,7 @@
 </head>
 
 <body>
-  <div class="container" style="display:none;">
-    <h1>로딩 후 화면</h1>
-    <div>
+  <div id="loader" class="invisible"></div>
 
       <!-- ======= Header ======= -->
       <header id="header" class="d-flex align-items-center">
@@ -153,7 +151,7 @@
       <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
       <script src="{{ url_for('static', filename='js/main.js') }}"></script>
       <style>
-        .loader {
+        #loader {
           position: absolute;
           left: 50%;
           top: 50%;

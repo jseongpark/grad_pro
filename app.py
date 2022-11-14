@@ -8,10 +8,6 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 CFG = {
     'IMG_SIZE': 32,  # 이미지 사이즈
-    'EPOCHS': 50,  # 에포크
-    'LEARNING_RATE': 2e-2,  # 학습률
-    'BATCH_SIZE': 12,  # 배치사이즈
-    'SEED': 41,  # 시드
 }
 
 labels = []
@@ -29,7 +25,7 @@ f.close()
 
 
 def invert_dictionary(obj):
-  return {value: key for key, value in obj.items()}
+    return {value: key for key, value in obj.items()}
 
 
 num_to_word = invert_dictionary(word_to_num)
@@ -74,11 +70,10 @@ class CustomDataset(Dataset):
 
     def __len__(self):  # 길이 return
         return len(self.img_path_list)
+
+
 import cv2
-
-
-import torch.nn as nn  # 신경망들이 포함됨
-
+import torch.nn as nn
 
 class CNNclassification(nn.Module):
     def __init__(self):
@@ -152,6 +147,7 @@ def predict(cnn_model, test_loader, device):
             model_pred.extend(pred_logit.tolist())
     return model_pred
 
+
 print("loading CNN model...")
 checkpoint = torch.load(default_dir + 'best_model.pth', map_location=device)
 cnn_model = CNNclassification().to(device)
@@ -163,47 +159,51 @@ def getSize(txt, font):
     testDraw = ImageDraw.Draw(testImg)
     return testDraw.textsize(txt, font)
 
+
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+
 colorBackground = "white"
 colorText = "black"
 
 from hangul_utils import join_jamos
-from jamo import h2j,j2hcj
+from jamo import h2j, j2hcj
 
 
 def cnn(text):
-    #text=u"ひらがなㄱㄴㄷㄹ"
-    
-    jamo_str = j2hcj(h2j(text))
-    
+    # text=u"ひらがなㄱㄴㄷㄹ"
 
-    for i in range(len(jamo_str)):
-        ch = jamo_str[i]
-        font = ImageFont.truetype(default_dir +"ARIALUNI.ttf", 14)
-        width, height = getSize(ch, font)
-        img = Image.new('L', (width+8, height+8), colorBackground)
-        d = ImageDraw.Draw(img)
-        d.text((4, height/2-4), ch, fill=colorText, font=font)
+    bool = []
 
-        img_dir = default_dir + 'imgs/'
-        img.save(img_dir + str(i) + ".png")
+    for i in range(len(text)):
+        ch = text[i]
+        if ord('가') <= ord(ch) <= ord('힣') or ord('a') <= ord(ch.lower()) <= ord('z'):
+            bool.append(False)
+        else:
+            bool.append(True)
+            font = ImageFont.truetype(default_dir + "ARIALUNI.ttf", 14)
+            width, height = getSize(ch, font)
+            img = Image.new('L', (width + 8, height + 8), colorBackground)
+            d = ImageDraw.Draw(img)
+            d.text((4, height / 2 - 4), ch, fill=colorText, font=font)
+
+            img_dir = default_dir + 'imgs/'
+            img.save(img_dir + str(i) + ".png")
 
     test_transform = transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.Grayscale(num_output_channels=1),
-                        transforms.Resize([CFG['IMG_SIZE'], CFG['IMG_SIZE']]),
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean=0.5, std=0.5)
-                        ])
+        transforms.ToPILImage(),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Resize([CFG['IMG_SIZE'], CFG['IMG_SIZE']]),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=0.5, std=0.5)
+    ])
     test_img_path = get_test_data(img_dir)
     test_dataset = CustomDataset(test_img_path, None, train_mode=False, transforms=test_transform)
-    test_loader = DataLoader(test_dataset, batch_size=20, shuffle=False, num_workers=0)
+    test_loader = DataLoader(test_dataset, batch_size=len(text), shuffle=False, num_workers=0)
 
-    
     preds = predict(cnn_model, test_loader, device)
-    
+
     chs = list(map(lambda pred: num_to_word[pred], preds))
     if chs[0] == chs[1]:
         del chs[0]
@@ -217,7 +217,17 @@ def cnn(text):
             chs[0] = 'ㅆ'
         elif chs[0] == 'ㅈ':
             chs[0] = 'ㅉ'
-    return chs
+
+    result = []
+    j = 0
+    for i in range(len(text)):
+        if bool[i]:
+            result.append(chs[j])
+            j = j + 1
+        else:
+            result.append(text[i])
+    return result
+
 
 # example
 # chat = u"^^l발ひらがなㄱㄴㄷㄹ"
@@ -230,6 +240,7 @@ from tensorflow import keras
 from transformers import TFRobertaModel
 from RoBERTa_predict import *
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 app = Flask(__name__)
 
@@ -238,29 +249,39 @@ app = Flask(__name__)
 def root():
     return render_template('index.html')
 
-@app.route("/model", methods=['POST']) 
+@app.route("/model", methods=['POST'])
 def model():
     if request.method == 'POST':
+        if os.path.exists(default_dir + 'imgs/'):
+            for file in os.scandir(default_dir + 'imgs/'):
+                # os.remove('C:\proj/final/test1/cnn/imgs/0.png')
+                os.remove(file)
+            print('img 폴더 초기화 완료')
+
         chat = request.form['chat']
 
         text1 = cnn(chat)
-        
+        print('CNN 처리 이후 : ')
+        print(text1)
         text2 = ''.join(text1)
-        
+
         text3 = join_jamos(text2)
-        
-        roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5', custom_objects={'TFRobertaModel':TFRobertaModel})
-        
+        print('한글 Automata 처리 이후 : ')
+        print(text3)
+        roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5',
+                                                   custom_objects={'TFRobertaModel': TFRobertaModel})
+
         roberta_tokenizer = get_tokenizer()
-        
+
         prediction = get_predict_by_model(roberta_model, roberta_tokenizer, text3)
-        
-        jsondata = json.dumps(prediction)
+        print('욕설 확률 : ')
+        print(prediction)
+        prediction2 = round(prediction, 1)
+        jsondata = json.dumps(prediction2)
 
         return jsondata
 
 
-
-if __name__ == "__main__": 
+if __name__ == "__main__":
     print("runnig server")
-    app.run(host = "127.0.0.1", port = 5000, debug = True)
+    app.run(host="127.0.0.1", port=5000, debug=False)

@@ -1,9 +1,10 @@
+
 from flask import Flask, request, render_template, json, jsonify
 
 import os
 import torch
 
-default_dir = "D:\proj/final/test1/cnn/"
+default_dir = "C:\proj/final/test1/cnn/"
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')  # GPU 할당
 
 CFG = {
@@ -176,6 +177,7 @@ def cnn(text):
 
     bool = []
     text_length = len(text)
+<<<<<<< HEAD
     for i in range(text_length):
         ch = text[i]
         if ord('가') <= ord(ch) <= ord('힣') or ord('a') <= ord(ch.lower()) <= ord('z'):
@@ -189,6 +191,21 @@ def cnn(text):
             d.text((4, height / 2 - 4), ch, fill=colorText, font=font)
 
             img_dir = default_dir + 'imgs/'
+=======
+    img_dir = default_dir + 'imgs/'
+
+    for i in range(text_length):
+        ch = text[i]
+        if ch == ' ' or ord('가') <= ord(ch) <= ord('힣') or ord('1') <= ord(ch) <= ord('9'): # ord('a') <= ord(ch.lower()) <= ord('z'):
+            bool.append(False)
+        else:
+            bool.append(True)
+            font = ImageFont.truetype(default_dir + "ARIALUNI.ttf", 14)
+            width, height = getSize(ch, font)
+            img = Image.new('L', (width + 8, height + 8), colorBackground)
+            d = ImageDraw.Draw(img)
+            d.text((4, height / 2 - 4), ch, fill=colorText, font=font)
+>>>>>>> 1b649c283be3c980b6dc4f96425fa62490b90a6d
             img.save(img_dir + str(i) + ".png")
 
     test_transform = transforms.Compose([
@@ -205,7 +222,11 @@ def cnn(text):
     preds = predict(cnn_model, test_loader, device)
 
     chs = list(map(lambda pred: num_to_word[pred], preds))
-    if chs[0] == chs[1]:
+    
+
+    flag = False
+    if len(chs) > 1 and chs[0] == chs[1] and (bool[0] == True and bool[1] == True):
+        flag = True
         del chs[0]
         text_length = text_length - 1
         if chs[0] == 'ㄱ':
@@ -219,16 +240,31 @@ def cnn(text):
         elif chs[0] == 'ㅈ':
             chs[0] = 'ㅉ'
 
+<<<<<<< HEAD
     result = []
     j = 0
     for i in range(text_length):
+=======
+
+
+    result = []
+    j = 0
+
+    
+
+    start = 1 if flag else 0
+    for i in range(start, text_length):
+>>>>>>> 1b649c283be3c980b6dc4f96425fa62490b90a6d
         if bool[i]:
             result.append(chs[j])
             j = j + 1
         else:
             result.append(text[i])
     return result
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1b649c283be3c980b6dc4f96425fa62490b90a6d
 
 # example
 # chat = u"^^l발ひらがなㄱㄴㄷㄹ"
@@ -244,6 +280,14 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 app = Flask(__name__)
+<<<<<<< HEAD
+=======
+
+roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5',
+custom_objects={'TFRobertaModel': TFRobertaModel})
+
+roberta_tokenizer = get_tokenizer()
+>>>>>>> 1b649c283be3c980b6dc4f96425fa62490b90a6d
 
 
 @app.route("/")
@@ -269,10 +313,14 @@ def model():
         text3 = join_jamos(text2)
         print('한글 Automata 처리 이후 : ')
         print(text3)
+<<<<<<< HEAD
         roberta_model = tf.keras.models.load_model('./static/abusing_detection_1.h5',
                                                    custom_objects={'TFRobertaModel': TFRobertaModel})
 
         roberta_tokenizer = get_tokenizer()
+=======
+
+>>>>>>> 1b649c283be3c980b6dc4f96425fa62490b90a6d
 
         prediction = get_predict_by_model(roberta_model, roberta_tokenizer, text3)
         print('욕설 확률 : ')
